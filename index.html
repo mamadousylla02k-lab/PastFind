@@ -141,6 +141,10 @@
 
   <script>
     async function analyzeMusic() {
+      // 🔴 IMPORTANT : Remplacer cette URL par celle de Render une fois déployé
+      // Exemple : const API_URL = "https://mon-app.onrender.com/identify";
+      const API_URL = "http://127.0.0.1:8000/identify";
+
       const urlInput = document.getElementById('videoUrl').value;
       const resultDiv = document.getElementById('result');
       const btn = document.getElementById('btnText');
@@ -153,7 +157,7 @@
       resultDiv.style.display = "none";
 
       try {
-        const response = await fetch('http://127.0.0.1:8000/identify', {
+        const response = await fetch(API_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ url: urlInput })
