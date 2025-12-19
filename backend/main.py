@@ -24,45 +24,33 @@ class VideoURL(BaseModel):
 async def identify_song(data: VideoURL):
     filename = "temp_audio.mp3"
     
-    # Configuration spécifique pour TikTok
+    # Configuration spécifique pour TikTok (délai)
     if "tiktok.com" in data.url:
-        # Simulation délai humain
         await asyncio.sleep(2)
-        
-        ydl_opts = {
-            'format': 'bestvideo+bestaudio/best', # Parfois forcer l'audio seul échoue sur TikTok
-            'outtmpl': 'temp_audio.%(ext)s',
-            'noplaylist': True,
-            'quiet': True,
-            'no_check_certificate': True,
-            'add_header': [
-                'User-Agent:Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36',
-                'Accept:text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8',
-                'Accept-Language:en-US,en;q=0.9',
-                'Range:bytes=0-'
-            ],
-            'postprocessors': [{
-                'key': 'FFmpegExtractAudio',
-                'preferredcodec': 'mp3',
-                'preferredquality': '192',
-            }],
-        }
-    else:
-        # Options standard pour les autres plateformes
-        ydl_opts = {
-            'format': 'bestaudio/best',
-            'outtmpl': 'temp_audio.%(ext)s',
-            'noplaylist': True,
-            'quiet': True,
-            'no_warnings': True,
-            'ignoreerrors': True,
-            'nocheckcertificate': True,
-            'postprocessors': [{
-                'key': 'FFmpegExtractAudio',
-                'preferredcodec': 'mp3',
-                'preferredquality': '192',
-            }],
-        }
+
+    # Options robustes pour TOUTES les plateformes (production + contournement blocages)
+    ydl_opts = {
+        'format': 'bestaudio/best',
+        'outtmpl': 'temp_audio.%(ext)s',
+        'noplaylist': True,
+        'quiet': False, # Logs visibles
+        'verbose': True,
+        'no_warnings': False,
+        'ignoreerrors': False,
+        'nocheckcertificate': True,
+        # Utiliser un client Android pour éviter les blocages (efficace pour YT et autres)
+        'extractor_args': {
+            'youtube': {
+                'player_client': ['android', 'web'],
+                'skip': ['dash', 'hls'],
+            },
+        },
+        'postprocessors': [{
+            'key': 'FFmpegExtractAudio',
+            'preferredcodec': 'mp3',
+            'preferredquality': '192',
+        }],
+    }
 
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
